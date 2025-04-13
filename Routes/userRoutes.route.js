@@ -18,6 +18,6 @@ router.post("/login",
     body('password', "password required").notEmpty(), login);
 
 router.get("/allUsers", auth, getAllUsers);
-router.post("/profile/:id", userProfile);
+router.get("/profile/:id", userProfile);
 
 export default router;
