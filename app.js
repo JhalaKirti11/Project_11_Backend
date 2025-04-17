@@ -7,6 +7,7 @@ import { fileURLToPath } from "url"
 import cors from 'cors';
 
 import UserRouter from "./Routes/userRoutes.route.js";
+import ProductRouter from './Routes/product.route.js'
 
 const app = express();
 
@@ -19,12 +20,17 @@ mongoose.connect("mongodb://127.0.0.1:27017/Project_11")
 
         app.use(express.json({ limit: '10mb' }));
         app.use(express.static('public'));
+        app.use('/uploads', express.static('uploads'));
 
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
-        app.use(cors());
-
+        app.use(cors({
+            origin: 'http://localhost:3000',
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+            allowedHeaders: ['Content-Type', 'Authorization']
+        }));
         app.use("/user", UserRouter);
+        app.use("/product", ProductRouter);
 
         app.listen(5000, () => {
             console.log("server running on port no. 5000");

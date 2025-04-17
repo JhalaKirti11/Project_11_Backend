@@ -16,6 +16,11 @@ const User_Schema = mongoose.Schema({
     },
     image:{
         type:String
+    },
+    status:{
+        type: Boolean,
+        enum: [true, false],
+        default: true
     }
 });
 

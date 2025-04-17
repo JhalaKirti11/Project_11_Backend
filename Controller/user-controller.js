@@ -3,8 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import fs from 'fs';
 import path from 'path';
-
-import { User } from "../modal/User.model.js";
+import { User } from "../modal/User.modal.js";
 
 //-------------------------- Registration ------------------------
 
@@ -16,32 +15,14 @@ export const register = async (req, res, next) => {
         if (!error.isEmpty()) {
             return res.status(501).json({ error: 'Validation Failed' });
         }
+        const { name, email, password } = req.body;
+        const imagePath = req.file ? req.file.path : null;
 
-        const { name, email, password, image } = req.body;
         console.log("User details:", name, email);
 
-        // Hash password
         const saltKey = bcrypt.genSaltSync(10);
         const newPass = bcrypt.hashSync(password, saltKey);
         req.body.password = newPass;
-
-        let imagePath = '';
-        if (image) {
-            const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-            const ext = image.split(';')[0].split('/')[1];
-            const buffer = Buffer.from(base64Data, 'base64');
-
-            const imagesDir = path.join(process.cwd(), 'public', 'images');
-            if (!fs.existsSync(imagesDir)) {
-                fs.mkdirSync(imagesDir, { recursive: true });
-            }
-
-            const filename = `${Date.now()}.${ext}`;
-            const filepath = path.join(imagesDir, filename);
-            fs.writeFileSync(filepath, buffer);
-            imagePath = `/images/${filename}`;
-        }
-        
 
         req.body.image = imagePath;
 
@@ -70,7 +51,13 @@ export const login = async (req, res, next) => {
             return res.status(501).json({ error: 'Invalid Details' })
         }
         let { email, password } = req.body;
+
         let user = await User.findOne({ email });
+        if (!user.status) {
+            console.log("deactivated user");
+            return res.status(401).json({ error: `Deactivated user !` });
+        }
+
         if (user) {
             console.log("Passwords : " + password + " " + user.password)
             let status = bcrypt.compareSync(password, user.password);
@@ -100,12 +87,14 @@ const generateToken = (userId) => {
 //-------------------------- Users List ---------------------------
 export const getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.find();
+        // console.log("Fetching all users data...")
+        const users = await User.find({ status: true });
         if (users) {
             return res.status(201).json({ msg: `Users : `, users });
         } else {
             return res.status(401).json({ error: `can not fetch the users right now!` });
         }
+
     } catch (error) {
         return res.status(500).json({ error: `Internal Server Error!`, error });
     }
@@ -113,21 +102,72 @@ export const getAllUsers = async (req, res, next) => {
 
 //------------------------- User Profile ------------------------------
 
-export const userProfile = async (req, res, next)=>{
-    const {id} = req.params;
-    console.log("id : "+ id);
-    try{
-        const user = await User.findById({_id:id});
-        if(user){
-            console.log("got user : "+ user);
+export const userProfile = async (req, res, next) => {
+    console.log("entered")
+    const { id } = req.params;
+    console.log("id : " + id);
+    try {
+        const user = await User.findById({ _id: id });
+        if (user) {
+            console.log("got user : " + user);
             return res.status(201).json({ msg: `User : `, user });
-        }else{
+        } else {
             console.log("can not fetch the user data")
             return res.status(401).json({ error: `can not fetch the user data` });
         }
 
-    }catch(error){
+    } catch (error) {
         console.log("some error occured : ", error);
-        return res.status(500).json({error: `Internal Server Error!`})
+        return res.status(500).json({ error: `Internal Server Error!` })
     }
 }
+
+//------------------------ Delete ------------------------------------
+
+export const deleteProfile = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { state } = req.body;
+        console.log("id : " + id + " state " + state);
+        const user = await User.findByIdAndUpdate({ _id: id }, { status: state });
+        console.log('status : ', user.status);
+        if (user) {
+            console.log("user updated");
+            return res.status(201).json({ msg: `User : `, user });
+        } else {
+            console.log("can not fetch the user data")
+            return res.status(401).json({ error: `can not fetch the user data` });
+        }
+
+    } catch (error) {
+        console.log("some error occured : ", error);
+        return res.status(500).json({ error: `Internal Server Error!` })
+    }
+}
+
+//---------------------------------- Update ------------------------------------
+
+
+export const updateProfile = async (req, res) => {
+    const { id } = req.params;
+    // const { name, email } = req.body;
+    const imagePath = req.file ? req.file.path : null;
+    req.body.image = imagePath;
+
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            { _id: id },
+            req.body,
+            { new: true }
+        );
+
+        if (updatedUser) {
+            res.status(200).json({ success: true, user: updatedUser });
+        } else {
+            res.status(404).json({ error: "User not found" });
+        }
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
