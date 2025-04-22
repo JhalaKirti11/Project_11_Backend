@@ -15,6 +15,7 @@ export const register = async (req, res, next) => {
         if (!error.isEmpty()) {
             return res.status(501).json({ error: 'Validation Failed' });
         }
+
         const { name, email, password } = req.body;
         const imagePath = req.file ? req.file.path : null;
 
@@ -23,7 +24,6 @@ export const register = async (req, res, next) => {
         const saltKey = bcrypt.genSaltSync(10);
         const newPass = bcrypt.hashSync(password, saltKey);
         req.body.password = newPass;
-
         req.body.image = imagePath;
 
         const user = await User.create(req.body);
@@ -92,7 +92,7 @@ export const getAllUsers = async (req, res, next) => {
         if (users) {
             return res.status(201).json({ msg: `Users : `, users });
         } else {
-            return res.status(401).json({ error: `can not fetch the users right now!` });
+            return res.status(401).json({ error: `Can not fetch the users right now!` });
         }
 
     } catch (error) {
@@ -145,24 +145,27 @@ export const deleteProfile = async (req, res, next) => {
     }
 }
 
-//---------------------------------- Update ------------------------------------
-
+//------------------------------------------------------------------------------
 
 export const updateProfile = async (req, res) => {
     const { id } = req.params;
-    // const { name, email } = req.body;
-    const imagePath = req.file ? req.file.path : null;
-    req.body.image = imagePath;
+    const { token } = req.body;
+    console.log("Token : " + token)
+    // const imagePath = req.file ? req.file.path : null;
+    if (req.file) {
+        const imagePath = req.file.path
+        req.body.image = imagePath;
+    }
 
     try {
-        const updatedUser = await User.findByIdAndUpdate(
+        const user = await User.findByIdAndUpdate(
             { _id: id },
             req.body,
             { new: true }
         );
 
-        if (updatedUser) {
-            res.status(200).json({ success: true, user: updatedUser });
+        if (user) {
+            res.status(200).json({ success: true, user, token: token });
         } else {
             res.status(404).json({ error: "User not found" });
         }

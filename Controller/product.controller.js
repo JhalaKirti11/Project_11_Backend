@@ -1,13 +1,16 @@
 import { Product } from "../modal/Product_schema.js"
 import { Category } from '../modal/Category_schema.js'
-import { getCategories } from "../controller/category-controller.js"
 
 export const addProduct = async (req, res, next) => {
     try {
         console.log("product creation...");
         console.log(req.body)
-        const imagePath = req.file ? req.file.path : null;
-        req.body.image = imagePath;
+        if (req.file) {
+            const imagePath = req.file.path
+            req.body.image = imagePath;
+        }
+        // const imagePath = req.file ? req.file.path : null;
+  
         const { category } = req.body;
         console.log("req.body : " + req.body.category)
         const categoryData = await Category.find({ name: category });
@@ -59,8 +62,10 @@ export const updateProduct = async (req, res, next) => {
         const { id } = req.params;
         console.log("updating... : " + id)
         console.log(req.body)
-        const imagePath = req.file ? req.file.path : null;
-        req.body.image = imagePath;
+        if (req.file) {
+            const imagePath = req.file.path
+            req.body.image = imagePath;
+        }
         const { category } = req.body;
 
         const categoryData = await Category.find({ name: category });
