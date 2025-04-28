@@ -107,7 +107,6 @@ export const deleteProduct = async (req, res, next) => {
             console.log("can not fetch the user data")
             return res.status(401).json({ error: `can not delete the product` });
         }
-
     } catch (error) {
         console.log("some error occured : ", error);
         return res.status(500).json({ error: `Internal Server Error!` })
