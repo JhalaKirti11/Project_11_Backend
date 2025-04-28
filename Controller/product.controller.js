@@ -9,8 +9,7 @@ export const addProduct = async (req, res, next) => {
             const imagePath = req.file.path
             req.body.image = imagePath;
         }
-        // const imagePath = req.file ? req.file.path : null;
-  
+
         const { category } = req.body;
         console.log("req.body : " + req.body.category)
         const categoryData = await Category.find({ name: category });

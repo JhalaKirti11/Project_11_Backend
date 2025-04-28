@@ -15,7 +15,6 @@ export const register = async (req, res, next) => {
         if (!error.isEmpty()) {
             return res.status(501).json({ error: 'Validation Failed' });
         }
-
         const { name, email, password } = req.body;
         const imagePath = req.file ? req.file.path : null;
 
@@ -41,9 +40,7 @@ export const register = async (req, res, next) => {
     }
 };
 
-
 //---------------------------- Login -------------------------------------
-
 export const login = async (req, res, next) => {
     try {
         const error = validationResult(req);
@@ -51,7 +48,6 @@ export const login = async (req, res, next) => {
             return res.status(501).json({ error: 'Invalid Details' })
         }
         let { email, password } = req.body;
-
         let user = await User.findOne({ email });
         if (!user.status) {
             console.log("deactivated user");
@@ -83,7 +79,6 @@ const generateToken = (userId) => {
     return token;
 };
 
-
 //-------------------------- Users List ---------------------------
 export const getAllUsers = async (req, res, next) => {
     try {
@@ -94,7 +89,6 @@ export const getAllUsers = async (req, res, next) => {
         } else {
             return res.status(401).json({ error: `Can not fetch the users right now!` });
         }
-
     } catch (error) {
         return res.status(500).json({ error: `Internal Server Error!`, error });
     }
@@ -115,7 +109,6 @@ export const userProfile = async (req, res, next) => {
             console.log("can not fetch the user data")
             return res.status(401).json({ error: `can not fetch the user data` });
         }
-
     } catch (error) {
         console.log("some error occured : ", error);
         return res.status(500).json({ error: `Internal Server Error!` })
@@ -138,7 +131,6 @@ export const deleteProfile = async (req, res, next) => {
             console.log("can not fetch the user data")
             return res.status(401).json({ error: `can not fetch the user data` });
         }
-
     } catch (error) {
         console.log("some error occured : ", error);
         return res.status(500).json({ error: `Internal Server Error!` })
@@ -156,14 +148,12 @@ export const updateProfile = async (req, res) => {
         const imagePath = req.file.path
         req.body.image = imagePath;
     }
-
     try {
         const user = await User.findByIdAndUpdate(
             { _id: id },
             req.body,
             { new: true }
         );
-
         if (user) {
             res.status(200).json({ success: true, user, token: token });
         } else {

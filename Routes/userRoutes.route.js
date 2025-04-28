@@ -23,5 +23,4 @@ router.get("/profile/:id", auth, userProfile);
 router.put("/update/:id", upload.single('image'), auth, updateProfile);
 router.put("/delete/:id", auth, deleteProfile);
 
-
 export default router;

@@ -1,5 +1,4 @@
 import express from "express";
-import { body } from "express-validator";
 import { addProduct, viewProducts, viewProduct, updateProduct, deleteProduct } from "../controller/product.controller.js";
 import { addCategory, getCategories, updateCategory, deleteCategory } from "../controller/category-controller.js";
 import { auth } from "../middleware/auth.js";

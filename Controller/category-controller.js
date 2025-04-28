@@ -4,14 +4,12 @@ export const addCategory = async (req, res, next) => {
     try {
         const { name } = req.body;
         console.log("category : " + name);
-        // const cat = await Category.findOne();
         const cat = await Category.findOne({
             $and: [
                 { name: name },
                 { isDelete: false }
             ]
         });
-
         const category = await Category.create(req.body);
         if (category) {
             console.log('category added successfully');
@@ -42,7 +40,6 @@ export const getCategories = async (req, res, next) => {
         return res.status(501).json({ error: `Internal Server Error!`, error })
     }
 }
-
 
 export const updateCategory = async (req, res, next) => {
     try {
