@@ -8,7 +8,6 @@ export function auth(req, res, next) {
     console.log("no token...")
     return res.status(401).json({ error: "No token provided" });
   }
-  // console.log("token : " + token);
   try {
     const decoded = jwt.verify(token, "fsdfsdrereioruxvxncnv");
     req.user = decoded;

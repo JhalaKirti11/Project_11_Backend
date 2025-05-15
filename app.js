@@ -5,32 +5,58 @@ import bcrypt from "bcryptjs";
 import path from "path"
 import { fileURLToPath } from "url"
 import cors from 'cors';
+import { Server } from 'socket.io';
+import http from 'http';
 
 import UserRouter from "./Routes/userRoutes.route.js";
-import ProductRouter from './Routes/product.route.js'
+import ProductRouter from './Routes/product.route.js';
+import chatRouter from "./Routes/chat-router.js"
 
 const app = express();
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+// app.use(cors());
+const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: 'http://loacalhost:3000',
+        methods: ['GET', 'POST']
+    }
+});
 
 const __file = fileURLToPath(import.meta.url);
 const __dir = path.dirname(__file)
+
 
 mongoose.connect("mongodb://127.0.0.1:27017/Project_11")
     .then(() => {
         console.log("Database connected...");
 
-        app.use(express.json({ limit: '10mb' }));
-        app.use(express.static('public'));
-        app.use('/uploads', express.static('uploads'));
+        io.on('connection', (socket) => {
+            console.log("User Connected", socket.id);
 
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: true }));
-        app.use(cors({
-            origin: 'http://localhost:3000',
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-            allowedHeaders: ['Content-Type', 'Authorization']
-        }));
+            socket.on('disconnection', () => {
+                console.log("User Disconnected", socket.id);
+            })
+            socket.on('user-message', (message) => {
+                console.log("read user-message : " + message)
+                io.emit('message', message);
+            })
+        })
+
         app.use("/user", UserRouter);
         app.use("/product", ProductRouter);
+        app.use('/chat', chatRouter);
 
         app.listen(5000, () => {
             console.log("server running on port no. 5000");

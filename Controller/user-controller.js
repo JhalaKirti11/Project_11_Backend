@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import fs from 'fs';
 import path from 'path';
-import { User } from "../modal/User.modal.js";
+import { User } from "../modal/User_schema.js";
 
 //-------------------------- Registration ------------------------
 
