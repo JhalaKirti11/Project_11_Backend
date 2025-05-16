@@ -30,6 +30,7 @@ export const viewChat = async (req, res, next) => {
     const { id } = req.params;
     console.log("id : " + id);
     try {
+        console.log("Viewing the chat...")
         const msgss = await Chat.find({ $or: [{ senderId: id }, { receiverId: id }] })
             .populate('senderId', 'name').populate('receiverId', 'name');
         if (msgss) {

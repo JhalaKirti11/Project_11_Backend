@@ -29,7 +29,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: 'http://loacalhost:3000',
+        origin: 'http://localhost:3000',
         methods: ['GET', 'POST']
     }
 });
@@ -48,9 +48,11 @@ mongoose.connect("mongodb://127.0.0.1:27017/Project_11")
             socket.on('disconnection', () => {
                 console.log("User Disconnected", socket.id);
             })
-            socket.on('user-message', (message) => {
-                console.log("read user-message : " + message)
-                io.emit('message', message);
+            socket.on('user-message', (data) => {
+                console.log("read user-message : " + data.message);
+                socket.broadcast.emit('receive_message', data)
+
+                // io.emit('message', data.message);
             })
         })
 
@@ -58,7 +60,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/Project_11")
         app.use("/product", ProductRouter);
         app.use('/chat', chatRouter);
 
-        app.listen(5000, () => {
+        server.listen(5000, () => {
             console.log("server running on port no. 5000");
         })
     }).catch((error) => {
