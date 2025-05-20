@@ -37,23 +37,41 @@ const io = new Server(server, {
 const __file = fileURLToPath(import.meta.url);
 const __dir = path.dirname(__file)
 
-
 mongoose.connect("mongodb://127.0.0.1:27017/Project_11")
     .then(() => {
         console.log("Database connected...");
-
+        const users = {};
         io.on('connection', (socket) => {
             console.log("User Connected", socket.id);
 
             socket.on('disconnection', () => {
                 console.log("User Disconnected", socket.id);
-            })
+            });
+
             socket.on('user-message', (data) => {
                 console.log("read user-message : " + data.message);
                 socket.broadcast.emit('receive_message', data)
-
                 // io.emit('message', data.message);
-            })
+            });
+
+            socket.on("register-user", (userId) => {
+                users[userId] = socket.id;
+                console.log("User registered: ", userId);
+            });
+
+            socket.on("typing", ({ from, to }) => {
+                const toSocketId = users[to];
+                if (toSocketId) {
+                    io.to(toSocketId).emit("typing", { name: from.username });
+                }
+            });
+
+            socket.on("stopped-typing", ({ from, to }) => {
+                const toSocketId = users[to];
+                if (toSocketId) {
+                    io.to(toSocketId).emit("stopped-typing");
+                }
+            });
         })
 
         app.use("/user", UserRouter);
